@@ -1,96 +1,123 @@
-# Fully Automated Build Guide (No Coding Experience Required)
+# Build Start Guide (No Coding Experience Required)
 
-This version removes manual `Config` entry. The script now auto-discovers clubs, source pages, and fee candidates.
+This guide turns `IMPLEMENTATION_PLAN.md` into concrete actions you can do right now.
 
-## What is now automated
+## What we have already prepared in this repo
 
-- Creates all required tabs with correct headers.
-- Auto-populates the `Config` tab from KartSport NZ club directory links.
-- Discovers likely fee source pages (membership, race entries, practice, Have a Go, PDFs).
-- Scrapes and classifies fee values into:
-  - `Annual_Costs`
-  - `Per_Use_Costs`
-  - `Have_A_Go`
-- Writes evidence and review status into `Sources_Log`.
-- Updates `last_successful_run` in `Config`.
+- `apps_script/Code.gs`: starter Google Apps Script file that creates the required tabs and headers, plus a monthly trigger.
+- `templates/*.csv`: starter header templates you can import into Google Sheets (optional if you use the script).
 
 ---
 
-## Step 1: Create the spreadsheet
+## Step 1: Create your Google Sheet (manual)
 
-1. Open Google Drive (committee account).
-2. Click **New** → **Google Sheets**.
-3. Name it **Kart Sport NZ Fee Comparison**.
-
----
-
-## Step 2: Install script
-
-1. Open the sheet.
-2. Click **Extensions** → **Apps Script**.
-3. Open `Code.gs`.
-4. Replace everything with `apps_script/Code.gs` from this repository.
-5. Click **Save**.
+1. Sign in to the committee Google account.
+2. Open Google Drive.
+3. Click **New** → **Google Sheets**.
+4. Rename it to: **Kart Sport NZ Fee Comparison**.
+5. Move it into your committee shared drive/folder.
 
 ---
 
-## Step 3: One-time setup
+## Step 2: Add the automation script (manual)
 
-1. Select function **setupWorkbook**.
+1. In the new Sheet, click **Extensions** → **Apps Script**.
+2. In Apps Script, open `Code.gs`.
+3. Delete all existing text in the editor.
+4. Copy everything from this repository file:
+   - `apps_script/Code.gs`
+5. Paste it into Apps Script and click **Save**.
+
+---
+
+## Step 3: Run first-time setup (manual)
+
+1. At the top of Apps Script, choose function **setupWorkbook**.
 2. Click **Run**.
-3. Approve permissions if prompted.
-
-This creates all required tabs automatically.
+3. If asked to authorize:
+   - Click **Review permissions**.
+   - Select your Google account.
+   - Click **Advanced** (if shown) → **Go to project**.
+   - Click **Allow**.
+4. Return to your Sheet. You should now see tabs:
+   - `Annual_Costs`
+   - `Per_Use_Costs`
+   - `Have_A_Go`
+   - `Sources_Log`
+   - `Config`
 
 ---
 
-## Step 4: Turn on monthly automation
+## Step 4: Set monthly schedule (manual)
 
-1. Select function **createMonthlyTrigger**.
+1. Back in Apps Script, select function **createMonthlyTrigger**.
 2. Click **Run** once.
-
-This schedules automatic monthly updates (1st day, 5 AM).
+3. This creates an automatic run on the 1st day of each month at 5 AM.
 
 ---
 
-## Step 5: First fully automated run
+## Step 5: Enter your first source list (manual)
 
-1. Select function **monthlyRun**.
+1. Open the `Config` tab.
+2. Add one row per club source URL.
+3. Fill these columns:
+   - `club_name`: e.g. "KartSport Taranaki"
+   - `source_type`: e.g. `html`, `pdf`, `manual`
+   - `source_url`: full webpage/PDF URL
+   - `selector_or_rule`: simple note for now (e.g. "membership table")
+   - `is_active`: `TRUE`
+   - `alert_recipients`: committee email address
+
+Tip: Start with only 3–5 clubs for pilot setup.
+
+---
+
+## Step 6: Test the monthly run now (manual)
+
+1. In Apps Script, select function **monthlyRun**.
 2. Click **Run**.
+3. Go back to `Config` and confirm `last_successful_run` is populated.
 
-What happens automatically:
-- If `Config` is empty, script fills it automatically.
-- Script visits active source URLs.
-- Fees are extracted and written to output tabs.
-- `Sources_Log` is updated for audit and review.
+If it populated, the basic automation framework is working.
 
 ---
 
-## Step 6: Monthly human review (quick quality control)
+## Step 7: Manual validation routine (manual every month)
+
+On the first week of each month:
 
 1. Open `Sources_Log`.
-2. Filter `status = Needs review`.
-3. Validate those rows against source URL.
-4. Fill `date_validated`, `validator_initials`, set status to `Confirmed`.
+2. Filter `status` for `Needs review`.
+3. Check source links manually.
+4. Update:
+   - `date_validated`
+   - `validator_initials`
+   - `status` = `Confirmed`
 
 ---
 
-## Step 7: Dashboard publishing
+## Step 8: Committee dashboard setup (manual)
 
-1. Open Looker Studio.
-2. Create report from this Google Sheet.
-3. Build pages:
-   - Snapshot
+1. Open Looker Studio: <https://lookerstudio.google.com/>.
+2. Create a new report.
+3. Connect data source to your Google Sheet.
+4. Add separate pages:
+   - National Snapshot
    - Annual Costs
    - Per-Use Costs
    - Have a Go
    - Data Quality
-4. Share read-only with committee.
+5. Share report view access with committee members.
 
 ---
 
-## Important notes
+## What you need a developer to do next
 
-- Full automation still depends on each website allowing page access/scraping.
-- If a site blocks access or uses complex JavaScript rendering, records may be flagged as `Needs review`.
-- That is expected; the workflow is designed for “automated first, human validate exceptions.”
+After this setup is complete, a developer should implement:
+
+1. Real fee extraction logic inside `monthlyRun()`.
+2. HTML selector parsing per club.
+3. PDF parsing fallback.
+4. Regex fallback with confidence scoring.
+5. Automatic writes to `Annual_Costs`, `Per_Use_Costs`, `Have_A_Go`, and `Sources_Log`.
+
